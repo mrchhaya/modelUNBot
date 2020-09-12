@@ -4,7 +4,7 @@ from qwikidata.sparql import (get_subclasses_of_item,
 import qwikidata
 import hashlib
 from dotenv import load_dotenv
-import os
+import os,random
 
 load_dotenv('secrets.env')
 discordToken = os.getenv('DISCORD_TOKEN')
@@ -58,8 +58,9 @@ async def on_message(message):
         return
 
     t = message.content.lower()
-    if t[0:3] == ck and t[0:5] != '!unbc':
+    if t[0:3] == ck and t[0:5] != '!unbc' and t.split(" ")[1].lower() != "help":
         embedV = discord.Embed()
+        embedV.add_field(name = "Error",value="Couldn't find that country!")
         try:
             for i in range(len(res.get('results').get('bindings'))):
                 if t[4:len(t)] == res.get('results').get('bindings')[i].get('countryLabel').get('value').lower():
@@ -72,7 +73,7 @@ async def on_message(message):
                         h = str(m.hexdigest())
                         url = "https://upload.wikimedia.org/wikipedia/commons/" + h[0] + "/" + h[0] + h[1] + "/" + name
                         print(url)
-                        embedV = discord.Embed(title=res.get('results').get('bindings')[i].get('countryLabel').get('value'),color=0xebab34, url=url)
+                        embedV = discord.Embed(title=res.get('results').get('bindings')[i].get('countryLabel').get('value'),color=int(hex(random.randint(0,16777215)),16), url=url)
                         embedV.set_image(url=str(url))
                         await message.channel.send(url)
                     except AttributeError:
@@ -110,24 +111,31 @@ async def on_message(message):
                     except AttributeError:
                         embedV.add_field(name = "Currency", value= "No Value", inline = False)
         except IndexError:
-            message.channel.send("That didn't work! Try again fuck face!")
+            await message.channel.send("Error.")
         await message.channel.send(embed = embedV)
-    l = []
-    if t[0:5] == ck+'bc':
+    elif t[0:5] == ck+'bc':
+        embedBC = discord.Embed()
+        embedBC.add_field(name = "Error",value="Couldn't find that country!")
+        l = []
         for i in range(len(borderingCountries.get('results').get('bindings'))):
             try:
-                for j in range(len(borderingCountries.get('results').get('bindings')[i].get('instance_ofLabel'))):
-                    if t[6:len(t)] == borderingCountries.get('results').get('bindings')[i].get('instance_ofLabel').get('value').lower():
-                        embedBC = discord.Embed(title="Bordering Countries of " + borderingCountries.get('results').get('bindings')[i].get('instance_ofLabel').get('value'), color=0xebab34)
-                        l.append(borderingCountries.get('results').get('bindings')[i].get('shares_border_withLabel').get('value'))
+                if t[6:len(t)] == borderingCountries.get('results').get('bindings')[i].get('instance_ofLabel').get('value').lower():
+                    for j in range(len(borderingCountries.get('results').get('bindings')[i].get('instance_ofLabel'))):
+                            embedBC = discord.Embed(title="Bordering Countries of " + borderingCountries.get('results').get('bindings')[i].get('instance_ofLabel').get('value'), color=int(hex(random.randint(0,16777215)),16))
+                            l.append(borderingCountries.get('results').get('bindings')[i].get('shares_border_withLabel').get('value'))
             except AttributeError:
                 pass
         l = list(dict.fromkeys(l))
         for i in range(len(l)):
             embedBC.add_field(name = "Bordering Country " + str(i+1) + ": ",value=l[i],inline = False)
         await message.channel.send(embed = embedBC)
-    if t[0:4] == '!bad':
+    elif t[0:4] == '!bad':
         await message.channel.send("Fuck " + str(t[5:len(t)]))
+    elif t[0:3] == ck and t.split(" ")[1].lower() == "help":
+        embedHelp = discord.Embed(title="Commands: ", color = int(hex(random.randint(0,16777215)),16))
+        embedHelp.add_field(name = "Information about Country: ", value = "Returns information about a certain country. Usage: !un {country_name}")
+        embedHelp.add_field(name = "Bordering Countries to Country", value = "Returns all of the bordering countries to a certain country. Usage: !unbc {country_name}")
+        await message.channel.send(embed = embedHelp)
 client.run(discordToken)
 
 
@@ -141,5 +149,5 @@ client.run(discordToken)
 # Leader ✅
 # Ruling party
 # Area ✅
-# Bordering countries
+# Bordering countries ✅
 # Major Religion

@@ -38,10 +38,10 @@ res = return_sparql_query_results(sparql_query)
 borderingCountries = return_sparql_query_results(sq2)
 # print(res)
 # print(res.get('head'))
-for i in range(len(borderingCountries.get('results').get('bindings'))):
-    print(borderingCountries.get('results').get('bindings')[i].get('instance_ofLabel').value())
-    for j in range(len(borderingCountries.get('results').get('bindings')[i].get('instance_ofLabel'))):
-        print(borderingCountries.get('results').get('bindings')[i].get('shares_border_withLabel').get('value'))
+# for i in range(len(borderingCountries.get('results').get('bindings'))):
+#     print(borderingCountries.get('results').get('bindings')[i].get('instance_ofLabel').value())
+#     for j in range(len(borderingCountries.get('results').get('bindings')[i].get('instance_ofLabel'))):
+#         print(borderingCountries.get('results').get('bindings')[i].get('shares_border_withLabel').get('value'))
     # print(borderingCountries.get('results').get('bindings')[i].get('shares_border_withLabel').get('value'))
 
 # for i in range(len(res.get('results').get('bindings'))):
@@ -51,3 +51,4 @@ for i in range(len(borderingCountries.get('results').get('bindings'))):
 #         print("FUCKY WUCKY!")
     # print(res.get('results').get('bindings')[i].get('Human_Development_Index').get('value'))
 
+print(type(0xffffff))
