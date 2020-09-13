@@ -154,7 +154,7 @@ async def on_message(message):
             embedBC.add_field(name = "Bordering Country " + str(i+1) + ": ",value=l[i],inline = False)
         await message.channel.send(embed = embedBC)
     elif t[0:4] == '!bad':
-        await message.channel.send("Screw " + str(t[5:len(t)]))
+        await message.channel.send(str(t[5:len(t)]) + " sucks!")
     elif t[0:3] == ck and t.split(" ")[1].lower() == "help":
         embedHelp = discord.Embed(title="Commands: ", color = int(hex(random.randint(0,16777215)),16))
         embedHelp.add_field(name = "Information about Country: ", value = "Returns information about a certain country. Usage: !un {country_name}")
