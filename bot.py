@@ -5,7 +5,9 @@ import qwikidata
 import hashlib
 from dotenv import load_dotenv
 import os,random
-import pycountry
+import pycountry,requests
+from bs4 import BeautifulSoup
+import re
 
 load_dotenv('secrets.env')
 discordToken = os.getenv('DISCORD_TOKEN')
@@ -71,11 +73,35 @@ def shortHand(s):
                 return pycountry.countries.get(alpha_3=s).name.lower()
             else:
                 return "invalid"
-
+nl = []
+def start():
+    urls = []
+    page = requests.get('https://www.un.org/securitycouncil/content/resolutions-0')
+    soup = BeautifulSoup(page.content,'html.parser')
+    x = soup.find_all('a')
+    for y in x:
+        if re.search("^[123][0-9]",y.get_text()) and len(y.get_text()) == 4:
+            urls.append('https://www.un.org/securitycouncil/content/resolutions-adopted-security-council-'+y.get_text())
+    # tot = []
+    for url in urls:
+        soup = BeautifulSoup(requests.get(url).content,'html.parser')
+        x = soup.find_all('tr')
+        # tot.append(len(x))
+        for td in x:
+            nl.append(td.get_text() + url[-4:])
+    print('done')
+def search(keyword):
+    rl = []
+    for y in nl:
+        if keyword.lower() in y.lower():
+             rl.append(y)
+    return rl
 @client.event
 async def on_ready():
-    print('We have logged in as {0.user}'.format(client))
+    start()
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Model UN Nerds"))
+    print('We have logged in as {0.user}'.format(client))
+
 
 @client.event
 async def on_message(message):
@@ -83,7 +109,7 @@ async def on_message(message):
         return
 
     t = message.content.lower()
-    if t[0:3] == ck and t[0:5] != '!unbc' and t.split(" ")[1].lower() != "help":
+    if t[0:3] == ck and t[0:5] != '!unbc' and t.split(" ")[1].lower() != "help" and t[0:4] != '!unr':
         embedV = discord.Embed()
         embedV.add_field(name = "Error",value="Couldn't find that country!")
         try:
@@ -161,6 +187,8 @@ async def on_message(message):
         embedHelp.add_field(name = "Bordering Countries to Country", value = "Returns all of the bordering countries to a certain country. Usage: !unbc {country_name}")
         embedHelp.add_field(name = "Author: ", value="Mohit Chhaya - https://github.com/mrchhaya", inline=False)
         await message.channel.send(embed = embedHelp)
+    elif t[0:4] == ck+'r':
+        await message.channel.send(search(t.split()[1]))
 client.run(discordToken)
 
 
