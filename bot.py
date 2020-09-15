@@ -7,8 +7,7 @@ from dotenv import load_dotenv
 import os,random
 import pycountry,requests
 from bs4 import BeautifulSoup
-import re
-
+import re,math,pickle
 load_dotenv('secrets.env')
 discordToken = os.getenv('DISCORD_TOKEN')
 
@@ -66,13 +65,35 @@ def shortHand(s):
             if s == shortNames.get('results').get('bindings')[i].get('short_name').get('value').lower():
                 return shortNames.get('results').get('bindings')[i].get('sovereign_stateLabel').get('value').lower()
         except:
-            # return "test"
             if(len(s)==2 and s.upper() in list_alpha_2):
                 return pycountry.countries.get(alpha_2=s).name.lower()
             elif(len(s)==3 and s.upper() in list_alpha_3):
                 return pycountry.countries.get(alpha_3=s).name.lower()
             else:
                 return "invalid"
+def pagintion(elementList,page):
+    page -= 1
+    chars, elementsPerPage = 0,0
+    for i in range(len(elementList)):
+        if chars < 1024:
+            chars += len(elementList[i])
+            print(chars)
+            elementsPerPage = i
+        elif chars > 1024:
+            elementsPerPage = elementsPerPage-1
+            break
+        elif chars == 1024:
+            elementsPerPage = i
+            break
+    fieldList = []
+    print(elementsPerPage * page, elementsPerPage * (page+1))
+    try:
+        for i in range(elementsPerPage * page, elementsPerPage * (page+1)):
+            fieldList.append(elementList[i])
+    except IndexError:
+        pass
+    return fieldList
+
 nl = []
 def start():
     urls = []
@@ -82,23 +103,25 @@ def start():
     for y in x:
         if re.search("^[123][0-9]",y.get_text()) and len(y.get_text()) == 4:
             urls.append('https://www.un.org/securitycouncil/content/resolutions-adopted-security-council-'+y.get_text())
-    # tot = []
     for url in urls:
         soup = BeautifulSoup(requests.get(url).content,'html.parser')
         x = soup.find_all('tr')
-        # tot.append(len(x))
         for td in x:
             nl.append(td.get_text() + url[-4:])
     print('done')
-def search(keyword):
+def search(keyword, year):
+    with open('resolutions.data', 'rb') as filehandle:
+        nl = pickle.load(filehandle)
     rl = []
     for y in nl:
-        if keyword.lower() in y.lower():
-             rl.append(y)
+        if keyword.lower() in y.lower() and year.lower() in y.lower():
+             rl.append(y[:-4])
     return rl
+
+
 @client.event
 async def on_ready():
-    start()
+    # start()
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Model UN Nerds"))
     print('We have logged in as {0.user}'.format(client))
 
@@ -185,10 +208,33 @@ async def on_message(message):
         embedHelp = discord.Embed(title="Commands: ", color = int(hex(random.randint(0,16777215)),16))
         embedHelp.add_field(name = "Information about Country: ", value = "Returns information about a certain country. Usage: !un {country_name}")
         embedHelp.add_field(name = "Bordering Countries to Country", value = "Returns all of the bordering countries to a certain country. Usage: !unbc {country_name}")
+        embedHelp.add_field(name = "UN Resolution Search", value = "Searches the UN database for all resolutions with a certain keyword in a certain year. Usage: !unr {country_name} {year}")
         embedHelp.add_field(name = "Author: ", value="Mohit Chhaya - https://github.com/mrchhaya", inline=False)
         await message.channel.send(embed = embedHelp)
     elif t[0:4] == ck+'r':
-        await message.channel.send(search(t.split()[1]))
+        page =1
+        left_reactCount, right_reactCount = 1, 1
+        embedRes1 = discord.Embed(title="Resolutions containing the keyword: " + t.split()[1] + " in the year, " + t.split()[2],color=int(hex(random.randint(0,16777215)),16))
+        try:
+            embedRes1.add_field(name = "Resolution: ", value=''.join(pagintion(search(t.split()[1],t.split()[2]),right_reactCount)), inline=False)
+            embedRes1.add_field(name = "Resolution: ", value=''.join(pagintion(search(t.split()[1],t.split()[2]),right_reactCount+1)), inline=False)
+            embedRes1.add_field(name = "Resolution: ", value=''.join(pagintion(search(t.split()[1],t.split()[2]),right_reactCount+2)), inline=False)
+            embedRes1.add_field(name = "Resolution: ", value=''.join(pagintion(search(t.split()[1],t.split()[2]),right_reactCount+3)), inline=False)
+            embedRes1.add_field(name = "Resolution: ", value=''.join(pagintion(search(t.split()[1],t.split()[2]),right_reactCount+4)), inline=False)
+            embedRes2 = discord.Embed(title="d")
+        except IndexError:
+            await message.channel.send('Index Error, Did you have both a country and year?')
+        print(embedRes1.fields)
+        counter = 0
+        for i in embedRes1.fields:
+            if i.value == '':
+                embedRes1.remove_field(counter)
+                counter -=1
+            counter += 1
+        if embedRes1.fields == '[]':
+            embedRes1.add_field(name="Resolution: ", value='None Found.',
+                                inline=False)
+        await message.channel.send(embed=embedRes1)
 client.run(discordToken)
 
 
@@ -206,7 +252,7 @@ client.run(discordToken)
 # Major Religion
 
 
-
+#✅
 # https://www.un.org/en/sections/documents/general-assembly-resolutions/index.html
 # Be able to find resolutions where [enter country] was involved from https://www.un.org/securitycouncil/content/resolutions-0 and bring them up.
 # Use keywords to bring up resolutions from https://www.un.org/securitycouncil/content/resolutions-0
