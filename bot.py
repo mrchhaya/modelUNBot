@@ -209,7 +209,7 @@ async def on_message(message):
         embedHelp.add_field(name = "Information about Country: ", value = "Returns information about a certain country. Usage: !un {country_name}")
         embedHelp.add_field(name = "Bordering Countries to Country", value = "Returns all of the bordering countries to a certain country. Usage: !unbc {country_name}")
         embedHelp.add_field(name = "UN Resolution Search", value = "Searches the UN database for all resolutions with a certain keyword in a certain year. Usage: !unr {country_name} {year}")
-        embedHelp.add_field(name = "Author: ", value="Mohit Chhaya - https://github.com/mrchhaya", inline=False)
+        embedHelp.add_field(name = "Author: ", value="Mohit Chhaya - https://github.com/mrchhaya, Sundays are for Chick-Fil-A#2964", inline=False)
         await message.channel.send(embed = embedHelp)
     elif t[0:4] == ck+'r':
         page =1
