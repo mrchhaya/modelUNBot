@@ -221,20 +221,19 @@ async def on_message(message):
             embedRes1.add_field(name = "Resolution: ", value=''.join(pagintion(search(t.split()[1],t.split()[2]),right_reactCount+2)), inline=False)
             embedRes1.add_field(name = "Resolution: ", value=''.join(pagintion(search(t.split()[1],t.split()[2]),right_reactCount+3)), inline=False)
             embedRes1.add_field(name = "Resolution: ", value=''.join(pagintion(search(t.split()[1],t.split()[2]),right_reactCount+4)), inline=False)
-            embedRes2 = discord.Embed(title="d")
+            counter = 0
+            for i in embedRes1.fields:
+                if i.value == '':
+                    embedRes1.remove_field(counter)
+                    counter -= 1
+                counter += 1
+            if embedRes1.fields == '[]':
+                embedRes1.add_field(name="Resolution: ", value='None Found.',
+                                    inline=False)
+            await message.channel.send(embed=embedRes1)
         except IndexError:
             await message.channel.send('Index Error, Did you have both a country and year?')
-        print(embedRes1.fields)
-        counter = 0
-        for i in embedRes1.fields:
-            if i.value == '':
-                embedRes1.remove_field(counter)
-                counter -=1
-            counter += 1
-        if embedRes1.fields == '[]':
-            embedRes1.add_field(name="Resolution: ", value='None Found.',
-                                inline=False)
-        await message.channel.send(embed=embedRes1)
+
 client.run(discordToken)
 
 
